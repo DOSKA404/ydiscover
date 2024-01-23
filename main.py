@@ -8,20 +8,15 @@ class VagrantFileGeneratorApp:
         self.root = root
         self.root.title("Vagrant File Generator")
 
-        # Obtenez les capacités du système
         self.total_memory = psutil.virtual_memory().total
         self.total_cpus = psutil.cpu_count(logical=False)
-        self.total_storage = psutil.disk_usage('/').total  # Obtenez la capacité totale du stockage
-
-        # Créer les étiquettes et les champs d'entrée
+        self.total_storage = psutil.disk_usage('/').total 
         self.iso_label = ttk.Label(root, text="Chemin vers le fichier ISO:")
-        self.iso_entry = ttk.Entry(root, state='disabled')  # Définir l'état sur 'disabled' pour que l'utilisateur ne puisse pas éditer manuellement
-
+        self.iso_entry = ttk.Entry(root, state='disabled')
         self.iso_browse_button = ttk.Button(root, text="Parcourir...", command=self.browse_iso)
 
         self.box_label = ttk.Label(root, text="Nom de la boîte (box):")
-        self.box_entry = ttk.Entry(root, state='disabled')  # Définir l'état sur 'disabled' pour que l'utilisateur ne puisse pas éditer manuellement
-
+        self.box_entry = ttk.Entry(root, state='disabled') 
         self.memory_label = ttk.Label(root, text="Quantité de mémoire:")
         self.memory_scale = ttk.Scale(root, from_=512, to=self.total_memory, orient=tk.HORIZONTAL, length=200, command=self.update_memory_label)
         self.memory_value_label = ttk.Label(root, text="0 MB")
@@ -36,8 +31,7 @@ class VagrantFileGeneratorApp:
 
         self.network_type_label = ttk.Label(root, text="Type de réseau:")
         self.network_type_combobox = ttk.Combobox(root, values=["forwarded_port", "private_network", "public_network"])
-        self.network_type_combobox.set("forwarded_port")  # Sélectionnez la première option par défaut
-
+        self.network_type_combobox.set("forwarded_port") 
         self.network_ip_label = ttk.Label(root, text="Adresse IP du réseau:")
         self.network_ip_entry = ttk.Entry(root)
 
@@ -47,10 +41,8 @@ class VagrantFileGeneratorApp:
         self.password_label = ttk.Label(root, text="Mot de passe (admin):")
         self.password_entry = ttk.Entry(root, show="*")
 
-        # Créer le bouton de génération
         self.generate_button = ttk.Button(root, text="Générer Vagrantfile", command=self.generate_vagrant_file)
 
-        # Organiser les éléments dans la grille
         self.iso_label.grid(row=0, column=0, sticky=tk.W, padx=10, pady=5)
         self.iso_entry.grid(row=0, column=1, padx=10, pady=5, sticky=tk.W)
         self.iso_browse_button.grid(row=0, column=2, padx=10, pady=5)
@@ -82,7 +74,7 @@ class VagrantFileGeneratorApp:
         self.cpus_value_label.config(text=f"{int(round(float(value)))} CPU")
 
     def update_storage_label(self, value):
-        self.storage_value_label.config(text=f"{int(float(value) / (1024**3))} GB")  # Convertir en Go
+        self.storage_value_label.config(text=f"{int(float(value) / (1024**3))} GB")  
 
     def browse_iso(self):
         iso_path = filedialog.askopenfilename(title="Sélectionner le fichier ISO", filetypes=[("ISO files", "*.iso")])
@@ -94,13 +86,11 @@ class VagrantFileGeneratorApp:
             self.update_box_name()
 
     def update_box_name(self):
-        # Extraire le nom du fichier de l'ISO
         iso_path = self.iso_entry.get()
         if iso_path:
             iso_filename = os.path.basename(iso_path)
-            # Remplacer les espaces et les caractères spéciaux pour obtenir un nom de boîte valide
             box_name = iso_filename.replace(" ", "_").replace(".", "_").replace("-", "_")
-            # Mettre à jour le champ de saisie de la boîte avec le nouveau nom
+     
             self.box_entry.config(state='normal')
             self.box_entry.delete(0, tk.END)
             self.box_entry.insert(0, box_name)
@@ -116,9 +106,6 @@ class VagrantFileGeneratorApp:
         username = self.username_entry.get()
         password = self.password_entry.get()
 
-        # Validation des entrées peut être ajoutée ici si nécessaire
-
-        # Génération du fichier Vagrant
         with open('Vagrantfile', 'w') as file:
             file.write(f'Vagrant.configure("2") do |config|\n')
             file.write(f'  config.vm.box = "{box_name}"\n')
@@ -126,8 +113,8 @@ class VagrantFileGeneratorApp:
             file.write(f'  config.vm.provider "virtualbox" do |vb|\n')
             file.write(f'    vb.memory = "{memory}"\n')
             file.write(f'    vb.cpus = {cpus}\n')
-            file.write(f'    vb.customize ["modifyvm", :id, "--ioapic", "on"]\n')  # Activer l'APIC pour Windows
-            file.write(f'    vb.customize ["modifyvm", :id, "--disk-size", {storage}]\n')  # Taille du disque
+            file.write(f'    vb.customize ["modifyvm", :id, "--ioapic", "on"]\n')  
+            file.write(f'    vb.customize ["modifyvm", :id, "--disk-size", {storage}]\n')  
             file.write(f'  end\n')
             file.write(f'  config.vm.provision "shell", inline: <<-SHELL\n')
             file.write(f'    # Configurez le nom d\'utilisateur et le mot de passe de l\'administrateur\n')
